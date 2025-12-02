@@ -7,10 +7,15 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create  # create ?? ?? ??? ?? ??
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
 
 logging:
   level:
