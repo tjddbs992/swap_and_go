@@ -1,11 +1,14 @@
 package com.swapandgo.sag.api.auth;
 
+import com.swapandgo.sag.dto.auth.AuthTokens;
 import com.swapandgo.sag.dto.auth.LoginRequest;
 import com.swapandgo.sag.dto.auth.LoginResponse;
 import com.swapandgo.sag.dto.auth.SignupRequest;
 import com.swapandgo.sag.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,15 +29,26 @@ public class AuthController {
     //로그인
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request){
-        LoginResponse response = authService.login(request);
-        return ResponseEntity.ok(response);
+        AuthTokens tokens = authService.login(request);
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", tokens.getRefreshToken())
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Lax")
+                .path("/auth/refresh")
+                .maxAge(7 * 24 * 60 * 60)
+                .build();
+
+        LoginResponse body = LoginResponse.of(tokens.getAccessToken(), tokens.getAccessTokenExpiresIn());
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .body(body);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<LoginResponse> refreshToken(@RequestHeader("Authorization") String refreshToken){
+    public ResponseEntity<LoginResponse> refreshToken(@CookieValue("refreshToken") String refreshToken){
         String token = refreshToken.startsWith("Bearer ") ? refreshToken.substring(7) : refreshToken;
 
-        System.out.println("Extracted token = [" + token + "]");
+        //System.out.println("Extracted token = [" + token + "]");
 
         LoginResponse response = authService.renewAccessToken(token);
         return ResponseEntity.ok(response);

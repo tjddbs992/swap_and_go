@@ -1,6 +1,7 @@
 package com.swapandgo.sag.service.auth;
 
 import com.swapandgo.sag.domain.user.User;
+import com.swapandgo.sag.dto.auth.AuthTokens;
 import com.swapandgo.sag.dto.auth.LoginRequest;
 import com.swapandgo.sag.dto.auth.LoginResponse;
 import com.swapandgo.sag.dto.auth.SignupRequest;
@@ -51,7 +52,7 @@ public class AuthService {
     }
 
     //로그인
-    public LoginResponse login(LoginRequest request){
+    public AuthTokens login(LoginRequest request){
         try {
             //인증
             Authentication authentication = authenticationManager.authenticate(
@@ -65,7 +66,7 @@ public class AuthService {
             String accessToken = jwtTokenProvider.generateAccessToken(request.getEmail());
             String refreshToken = jwtTokenProvider.generateRefreshToken(request.getEmail());
 
-            return LoginResponse.of(accessToken, refreshToken, accessTokenExpirationTime);
+            return AuthTokens.of(accessToken, refreshToken, accessTokenExpirationTime);
 
         }catch (AuthenticationException e){
             throw new IllegalArgumentException("이메일 또는 비밀번호가 잘못되었습니다.");
@@ -84,7 +85,7 @@ public class AuthService {
 
         String newAccessToken = jwtTokenProvider.generateAccessToken(email);
 
-        return LoginResponse.of(newAccessToken, refreshToken, accessTokenExpirationTime);
+        return LoginResponse.of(newAccessToken, accessTokenExpirationTime);
 
     }
 }
