@@ -1,10 +1,8 @@
 package com.swapandgo.sag.api.auth;
 
-import com.swapandgo.sag.dto.auth.AuthTokens;
-import com.swapandgo.sag.dto.auth.LoginRequest;
-import com.swapandgo.sag.dto.auth.LoginResponse;
-import com.swapandgo.sag.dto.auth.SignupRequest;
+import com.swapandgo.sag.dto.auth.*;
 import com.swapandgo.sag.service.auth.AuthService;
+import com.swapandgo.sag.service.auth.EmailVerificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,6 +16,29 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final EmailVerificationService emailVerificationService;
+
+    //이메일 인증 코드 발송
+    @PostMapping("/email")
+    public ResponseEntity<String> sendVerificationCode(@RequestBody SendVerificationCodeRequest request){
+        emailVerificationService.sendVerificationCode(request.getEmail());
+        return ResponseEntity.ok("인증 코드가 발송되었습니다.");
+    }
+    //인증 코드 확인, 토큰 발급
+    @PostMapping("/email-confirm")
+    public ResponseEntity<VerifyCodeResponse> verifyCode(@RequestBody VerifyCodeRequest request){
+        boolean isValid = emailVerificationService.verifyCode(
+                request.getEmail(),
+                request.getVerificationCode()
+        );
+        if (isValid) {
+            String token = emailVerificationService.issueVerificationToken(request.getEmail());
+            return ResponseEntity.ok(new VerifyCodeResponse("이메일 인증이 완료되었습니다.", token));
+        }else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new VerifyCodeResponse("인증 코드가 올바르지 않거나 만료되었습니다.", null));
+        }
+    }
 
     //회원가입
     @PostMapping("/signup")

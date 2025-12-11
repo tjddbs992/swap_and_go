@@ -27,16 +27,29 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
+    private final EmailVerificationService emailVerificationService;
 
     @Value("${jwt.access-token-expiration}")
     private long accessTokenExpirationTime;
 
     //회원가입
     public void signup(SignupRequest request){
+        //토큰 겁증 및 이메일 추출
+        String email = emailVerificationService.validateAndConsumeToken(request.getVerificationToken());
+        if (email == null) {
+            throw new IllegalArgumentException("유효하지 않거나 만효된 인증 토큰입니다.");
+        }
+
+        if(!email.equals(request.getEmail())){
+            throw new IllegalArgumentException("인증된 이메일과 요청 이메일이 일치하지 않습니다.");
+        }
+
         //이메일 중복 확인
         if(userRepository.findByEmail(request.getEmail()).isPresent()){
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
+
+
         //비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
@@ -48,6 +61,8 @@ public class AuthService {
         );
 
         userRepository.save(user);
+
+        emailVerificationService.removeVerificationCode(request.getEmail());
         log.info("새로운 사용자 등록되었습니다: {}", request.getEmail());
     }
 
