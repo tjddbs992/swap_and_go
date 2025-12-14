@@ -1,14 +1,24 @@
 package com.swapandgo.sag.api.auth;
 
+import com.swapandgo.sag.domain.user.Address;
+import com.swapandgo.sag.domain.user.User;
 import com.swapandgo.sag.dto.auth.*;
+import com.swapandgo.sag.dto.user.SimpleAddress;
+import com.swapandgo.sag.repository.UserRepository;
+import com.swapandgo.sag.security.user.CustomUserDetails;
 import com.swapandgo.sag.service.auth.AuthService;
 import com.swapandgo.sag.service.auth.EmailVerificationService;
+import com.swapandgo.sag.service.user.UserService;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -17,6 +27,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final EmailVerificationService emailVerificationService;
+    private final UserService userService;
 
     //이메일 인증 코드 발송
     @PostMapping("/email")
@@ -79,6 +90,30 @@ public class AuthController {
     public ResponseEntity<String> logout(){
         //클라이언트 측에서 토큰 삭제
         return ResponseEntity.ok("로그아웃 되었습니다.");
+    }
+
+    @GetMapping("/me")
+    //DTO 변환 책임 넘기기? 나중에
+    public ResponseEntity<UserResponse> getMe(@AuthenticationPrincipal CustomUserDetails userDetails){
+        User user = userService.getUserByEmail(userDetails.getEmail());
+
+        SimpleAddress simpleAddress = null;
+        Address address = user.getAddress();
+        if(address != null){
+            simpleAddress = new SimpleAddress(
+                    address.getCountry(),
+                    address.getRegion(),
+                    address.getStreet()
+            );
+        }
+
+        UserResponse userResponse = new UserResponse(
+                user.getEmail(),
+                user.getUsername(),
+                simpleAddress
+        );
+        return ResponseEntity.ok(userResponse);
+
     }
 
 }

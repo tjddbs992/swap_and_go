@@ -1,14 +1,16 @@
 package com.swapandgo.sag.domain.user;
 
 import jakarta.persistence.Embeddable;
+import lombok.Getter;
 
 @Embeddable
+@Getter
 public class Address {
     private String fullAddress;
     private Double latitude;
     private Double longitude;
     private String country;
-    private String city;
+    private String region;
     private String district;
     private String street;
     private String zipcode;
@@ -20,7 +22,7 @@ public class Address {
         this.latitude = latitude;
         this.longitude = longitude;
         this.country = country;
-        this.city = city;
+        this.region = city;
         this.district = district;
         this.street = street;
         this.zipcode = zipcode;
