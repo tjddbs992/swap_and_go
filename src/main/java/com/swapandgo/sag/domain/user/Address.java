@@ -17,14 +17,20 @@ public class Address {
 
     public Address(){ }
     public Address(String fullAddress, Double latitude, Double longitude, String country,
-                   String city, String district, String street, String zipcode){
+                   String region, String district, String street, String zipcode){
         this.fullAddress = fullAddress;
         this.latitude = latitude;
         this.longitude = longitude;
         this.country = country;
-        this.region = city;
+        this.region = region;
         this.district = district;
         this.street = street;
         this.zipcode = zipcode;
+    }
+
+    public Address(String country, String region, String street){
+        this.country = country;
+        this.region = region;
+        this.street = street;
     }
 }

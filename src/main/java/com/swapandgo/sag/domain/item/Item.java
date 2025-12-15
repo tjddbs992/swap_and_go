@@ -46,6 +46,8 @@ public class Item {
     @Enumerated(EnumType.STRING)
     private Category categoty;
 
+    private String location;
+
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
     private List<Image> images = new ArrayList<>();
 
@@ -53,31 +55,33 @@ public class Item {
     private LocalDateTime updated_at;
 
     //생성 메서드
-    public static Item createPost(
+    public static Item create(
             User user, String title, String content, BigDecimal price,
-            BigDecimal deposit, ItemType type, TradeType tradeType, Category categoty,
-            List<Image> images
+            BigDecimal deposit, ItemType type, TradeType tradeType, Category category,
+            String location, List<String> imageUrls
     ){
-        Item post = new Item();
-        post.setUser(user);
-        post.title = title;
-        post.content = content;
-        post.price = price;
-        post.deposit = deposit;
-        post.type = type;
-        post.tradeType = tradeType;
-        post.categoty = categoty;
-        post.status = itemStatus.ACTIVE;
-        post.created_at = LocalDateTime.now();
-        post.updated_at = LocalDateTime.now();
+        Item item = new Item();
+        item.setUser(user);
+        item.title = title;
+        item.content = content;
+        item.price = price;
+        item.deposit = deposit;
+        item.type = type;
+        item.tradeType = tradeType;
+        item.categoty = category;
+        item.status = itemStatus.ACTIVE;
+        item.location = location;
+        item.created_at = LocalDateTime.now();
+        item.updated_at = LocalDateTime.now();
 
-        if(images != null){
-            for (Image image : images){
-                post.addImage(image);
+        if(imageUrls != null){
+            for (String url : imageUrls){
+                Image image = Image.create(url);
+                item.addImage(image);
             }
         }
-        post.validate();
-        return post;
+        //item.validate();
+        return item;
 
     }
 
@@ -123,13 +127,13 @@ public class Item {
     //게시글 수정
     public void update(
             String title, String content, BigDecimal price, BigDecimal deposit,
-            Category categoty, ItemType type){
+            Category category, TradeType tradeType){
         this.title = title;
         this.content = content;
         this.price = price;
         this.deposit = deposit;
-        this.categoty = categoty;
-        this.type = type;
+        this.categoty = category;
+        this.tradeType = tradeType;
         this.updated_at = LocalDateTime.now();
 
         validate();
@@ -180,6 +184,6 @@ public class Item {
 
 
 //    public WishList toggleWish(User user){
-//    } post 에서 찜 리스트를 가지고 있지 않을 거라서 찜 추가 기능은 유저에서 진행
+//    } item 에서 찜 리스트를 가지고 있지 않을 거라서 찜 추가 기능은 유저에서 진행
 
 }
