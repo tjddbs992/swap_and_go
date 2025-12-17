@@ -1,4 +1,4 @@
-package com.swapandgo.sag;
+package com.swapandgo.sag.config;
 
 import com.swapandgo.sag.domain.user.Address;
 import com.swapandgo.sag.domain.user.User;
@@ -21,7 +21,7 @@ public class DummyUserInit implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (userRepository.findByEmail("test@test.com").isEmpty()) {
+        if (userRepository.findByEmail("jangeh3031@naver.com").isEmpty()) {
             String encodedPassword = passwordEncoder.encode("password");
             Address address = new Address("Germany", "Ulm", "Syrlinstrasse 8");
             User user = User.createUser("장은호", "jangeh3031@naver.com", encodedPassword, address);

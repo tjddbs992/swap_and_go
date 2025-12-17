@@ -11,6 +11,7 @@ import com.swapandgo.sag.service.auth.EmailVerificationService;
 import com.swapandgo.sag.service.user.UserService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @RestController
+@Slf4j
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
@@ -92,28 +94,7 @@ public class AuthController {
         return ResponseEntity.ok("로그아웃 되었습니다.");
     }
 
-    @GetMapping("/me")
-    //DTO 변환 책임 넘기기? 나중에
-    public ResponseEntity<UserResponse> getMe(@AuthenticationPrincipal CustomUserDetails userDetails){
-        User user = userService.getUserByEmail(userDetails.getEmail());
 
-        SimpleAddress simpleAddress = null;
-        Address address = user.getAddress();
-        if(address != null){
-            simpleAddress = new SimpleAddress(
-                    address.getCountry(),
-                    address.getRegion(),
-                    address.getStreet()
-            );
-        }
 
-        UserResponse userResponse = new UserResponse(
-                user.getEmail(),
-                user.getUsername(),
-                simpleAddress
-        );
-        return ResponseEntity.ok(userResponse);
-
-    }
 
 }

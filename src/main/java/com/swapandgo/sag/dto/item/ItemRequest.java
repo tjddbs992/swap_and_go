@@ -13,7 +13,7 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class ItemCreateRequest {
+public class ItemRequest {
     @NotBlank
     private String title;
 

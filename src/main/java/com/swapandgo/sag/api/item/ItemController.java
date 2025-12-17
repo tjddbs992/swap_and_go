@@ -1,13 +1,11 @@
 package com.swapandgo.sag.api.item;
 
-import com.swapandgo.sag.domain.item.Item;
-import com.swapandgo.sag.dto.item.ItemCreateRequest;
-import com.swapandgo.sag.dto.item.ItemCreateResponse;
+import com.swapandgo.sag.dto.item.ItemRequest;
+import com.swapandgo.sag.dto.item.ItemResponse;
 import com.swapandgo.sag.security.user.CustomUserDetails;
 import com.swapandgo.sag.service.item.ItemService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,25 +19,35 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping("/resale/items")
-    public ResponseEntity<ItemCreateResponse> writeResaleItem(
+    public ResponseEntity<ItemResponse> createResaleItem(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Valid @RequestBody ItemCreateRequest request){
+            @Valid @RequestBody ItemRequest request){
         Long userId = userDetails.getUserId();
         Long itemId = itemService.saveUsedItem(userId, request);
-        ItemCreateResponse response = new ItemCreateResponse(itemId, "중고거래 물품이 등록 되었습니다.");
+        ItemResponse response = new ItemResponse(itemId, "중고거래 물품이 등록 되었습니다.");
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/rental/items")
-    public ResponseEntity<ItemCreateResponse> writeRentalItem(
+    public ResponseEntity<ItemResponse> createRentalItem(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Valid @RequestBody ItemCreateRequest request){
+            @Valid @RequestBody ItemRequest request){
         Long userId = userDetails.getUserId();
         Long itemId = itemService.saveRentalItem(userId, request);
-        ItemCreateResponse response = new ItemCreateResponse(itemId, "대여 물품이 등록 되었습니다.");
+        ItemResponse response = new ItemResponse(itemId, "대여 물품이 등록 되었습니다.");
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+//    @PatchMapping("/resale/items/{itemId}")
+//    public ResponseEntity<ItemResponse> updateUsedItem(
+//            @AuthenticationPrincipal CustomUserDetails userDetails,
+//            @PathVariable("itemId") Long itemId,
+//            @RequestBody ItemRequest request
+//            ){
+//
+//        itemService.updateItem()
+//
+//    }
 }

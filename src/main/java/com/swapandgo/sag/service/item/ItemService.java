@@ -3,24 +3,21 @@ package com.swapandgo.sag.service.item;
 import com.swapandgo.sag.domain.item.Item;
 import com.swapandgo.sag.domain.item.ItemType;
 import com.swapandgo.sag.domain.user.User;
-import com.swapandgo.sag.dto.item.ItemCreateRequest;
+import com.swapandgo.sag.dto.item.ItemRequest;
 import com.swapandgo.sag.repository.ItemRepository;
 import com.swapandgo.sag.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
 
-    @Transactional
-    public Long saveUsedItem(Long userId, ItemCreateRequest request){
+    public Long saveUsedItem(Long userId, ItemRequest request){
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new IllegalArgumentException("사용자를 찾을 수 없습니다.")
         );
@@ -43,8 +40,7 @@ public class ItemService {
         return item.getId();
     }
 
-    @Transactional
-    public Long saveRentalItem(Long userId, ItemCreateRequest request){
+    public Long saveRentalItem(Long userId, ItemRequest request){
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new IllegalArgumentException("사용자를 찾을 수 없습니다.")
         );
@@ -66,10 +62,12 @@ public class ItemService {
         return item.getId();
     }
 
-    @Transactional
-    public Long updateItem(Item item){
+    public Long updateUsedItem(Long userId, Item item){
         Item findItem = itemRepository.findById(item.getId()).orElseThrow(
                 () -> new IllegalArgumentException("아이템을 찾을 수 없습니다 : " + item.getId()));
+        userRepository.findById(userId).orElseThrow(
+                () -> new IllegalArgumentException("사용자를 찾을 수 없습니다 : " + userId)
+        );
         findItem.update(
                 item.getTitle(),
                 item.getContent(),
@@ -82,7 +80,6 @@ public class ItemService {
         return findItem.getId();
     }
 
-    @Transactional
     public void deleteItem(Item item){
         itemRepository.delete(item);
     }
