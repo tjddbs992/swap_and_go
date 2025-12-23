@@ -27,5 +27,12 @@ public class DummyUserInit implements CommandLineRunner {
             User user = User.createUser("장은호", "jangeh3031@naver.com", encodedPassword, address);
             userRepository.save(user);
         }
+
+        if (userRepository.findByEmail("jang3031@naver.com").isEmpty()) {
+            String encodedPassword = passwordEncoder.encode("password");
+            Address address = new Address("Germany", "Berlin", "strasse 10");
+            User user = User.createUser("은호", "jang3031@naver.com", encodedPassword, address);
+            userRepository.save(user);
+        }
     }
 }

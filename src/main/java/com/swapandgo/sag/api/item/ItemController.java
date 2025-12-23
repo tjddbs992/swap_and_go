@@ -40,14 +40,40 @@ public class ItemController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-//    @PatchMapping("/resale/items/{itemId}")
-//    public ResponseEntity<ItemResponse> updateUsedItem(
-//            @AuthenticationPrincipal CustomUserDetails userDetails,
-//            @PathVariable("itemId") Long itemId,
-//            @RequestBody ItemRequest request
-//            ){
-//
-//        itemService.updateItem()
-//
-//    }
+    @PatchMapping("/resale/items/{itemId}")
+    public ResponseEntity<ItemResponse> updateUsedItem(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("itemId") Long itemId,
+            @RequestBody ItemRequest request
+            ){
+        Long userId = userDetails.getUserId();
+
+        Long updateItemId = itemService.updateUsedItem(userId, itemId, request);
+        ItemResponse response = new ItemResponse(updateItemId, "중고 거래 물품 정보가 수정되었습니다.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PatchMapping("/rental/items/{itemId}")
+    public ResponseEntity<ItemResponse> updateRentalItem(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("itemId") Long itemId,
+            @RequestBody ItemRequest request
+    ){
+        Long userId = userDetails.getUserId();
+
+        Long updateItemId = itemService.updateRentalItem(userId, itemId, request);
+        ItemResponse response = new ItemResponse(updateItemId, "대여 물품 정보가 수정되었습니다.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @DeleteMapping("/items/{itemId}")
+    public ResponseEntity<String> deleteItem(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable("itemId") Long itemId
+    ){
+        Long userId = userDetails.getUserId();
+        itemService.deleteItem(userId, itemId);
+        return ResponseEntity.ok("게시글이 성공적으로 삭제되었습니다.");
+    }
+
 }

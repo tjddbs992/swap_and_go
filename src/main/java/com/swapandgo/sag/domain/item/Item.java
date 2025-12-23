@@ -136,7 +136,7 @@ public class Item {
         this.tradeType = tradeType;
         this.updated_at = LocalDateTime.now();
 
-        validate();
+        //validate();
     }
 
     //대표 이미지 조회
