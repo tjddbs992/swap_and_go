@@ -32,3 +32,8 @@ build/
 *.iml
 
 .env
+
+### QueryDSL ###
+/src/main/generated/
+/build/generated/
+**/generated/
