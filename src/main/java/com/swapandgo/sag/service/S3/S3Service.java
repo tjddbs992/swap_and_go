@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
@@ -25,12 +26,12 @@ public class S3Service {
     private String region;
 
     //상픔 이미지 업로드
-    public String uploadItemImage(MultipartFile file){
+    public String uploadItemImage(MultipartFile file) {
         validateImageFile(file);
 
         String fileName = generateItemImageKey(file);
 
-        try{
+        try {
             //AWS S3 파일을 업로드 요청 객체
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                     .bucket(bucket)
@@ -45,10 +46,29 @@ public class S3Service {
             String imageUrl = generateImageUrl(fileName);
             log.info("상품 이미지 업로드 성공: {}", imageUrl);
             return imageUrl;
-        }catch (IOException e){
+        } catch (IOException e) {
             log.error("상품 이미지 업로드 실패", e);
             throw new RuntimeException("이미지 업로드에 실패했습니다.", e);
         }
+    }
+
+    public void deleteImage(String imageUrl) {
+        try {
+            //key(items/uuid1234.jpg) 뽑아내기
+            String key = extractKeyFromUrl(imageUrl);
+
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(key)
+                    .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
+            log.info("이미지 삭제 성공 : {}", imageUrl);
+        }catch (Exception e){
+            log.error("이미지 삭제 실패", e);
+            throw new RuntimeException("이미지 삭제에 실패했습니다", e);
+        }
+
     }
 
 
@@ -56,7 +76,7 @@ public class S3Service {
 
     //파일 검증
     private void validateImageFile(MultipartFile file) {
-        if (file == null || file.isEmpty()){
+        if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("파일이 비었습니다.");
         }
 
@@ -80,10 +100,15 @@ public class S3Service {
     }
 
     private String extractExtension(String filename) {
-        if(filename == null || !filename.contains(".")){
+        if (filename == null || !filename.contains(".")) {
             throw new IllegalArgumentException("파일 확장자가 존재하지 않습니다.");
         }
         return filename.substring(filename.lastIndexOf("."));
+    }
+
+    private String extractKeyFromUrl(String imageUrl) {
+        int index = imageUrl.indexOf(bucket + "/");
+        return imageUrl.substring(index + bucket.length() + 1);
     }
 
     private String generateImageUrl(String fileName) {
