@@ -47,7 +47,7 @@ public class ItemService {
         return item.getId();
     }
 
-    public Long updateUsedItem(Long userId, Long itemId, ItemRequest request){
+    public Long updateItem(Long userId, Long itemId, ItemRequest request){
         Item findItem = itemRepository.findById(itemId).orElseThrow(
                 () -> new IllegalArgumentException("아이템을 찾을 수 없습니다 : " + itemId));
         User user = userRepository.findById(userId).orElseThrow(

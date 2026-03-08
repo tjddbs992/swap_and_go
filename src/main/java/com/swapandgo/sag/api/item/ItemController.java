@@ -18,12 +18,12 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/items")
 public class ItemController {
 
     private final ItemService itemService;
 
-    @PostMapping(value = "/items", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ItemResponse> createItem(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestPart("data") @Valid ItemRequest request,
@@ -36,44 +36,23 @@ public class ItemController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-//    @PostMapping("/rental/items")
-//    public ResponseEntity<ItemResponse> createRentalItem(
-//            @AuthenticationPrincipal CustomUserDetails userDetails,
-//            @Valid @RequestBody ItemRequest request){
-//        Long userId = userDetails.getUserId();
-//        Long itemId = itemService.saveRentalItem(userId, request);
-//        ItemResponse response = new ItemResponse(itemId, "대여 물품이 등록 되었습니다.");
-//
-//        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-//    }
 
-    @PatchMapping("/resale/items/{itemId}")
-    public ResponseEntity<ItemResponse> updateUsedItem(
+    @PatchMapping("/{itemId}")
+    public ResponseEntity<ItemResponse> updateItem(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("itemId") Long itemId,
             @RequestBody ItemRequest request
             ){
         Long userId = userDetails.getUserId();
 
-        Long updateItemId = itemService.updateUsedItem(userId, itemId, request);
+        Long updateItemId = itemService.updateItem(userId, itemId, request);
         ItemResponse response = new ItemResponse(updateItemId, "중고 거래 물품 정보가 수정되었습니다.");
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PatchMapping("/rental/items/{itemId}")
-    public ResponseEntity<ItemResponse> updateRentalItem(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable("itemId") Long itemId,
-            @RequestBody ItemRequest request
-    ){
-        Long userId = userDetails.getUserId();
 
-        Long updateItemId = itemService.updateRentalItem(userId, itemId, request);
-        ItemResponse response = new ItemResponse(updateItemId, "대여 물품 정보가 수정되었습니다.");
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
 
-    @DeleteMapping("/items/{itemId}")
+    @DeleteMapping("/{itemId}")
     public ResponseEntity<String> deleteItem(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable("itemId") Long itemId
