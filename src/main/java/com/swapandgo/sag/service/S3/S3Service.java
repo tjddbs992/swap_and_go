@@ -11,13 +11,21 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class S3Service {
     private static final String ITEM_IMAGE_FOLDER = "items";
+    private static final Set<String> ALLOWED_TYPES = Set.of(
+            "image/jpeg", "image/png", "image/webp", "image/gif"
+    );
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     private final S3Client s3Client;
 
     @Value("{cloud.aws.s3.bucket}")
@@ -26,95 +34,53 @@ public class S3Service {
     private String region;
 
     //상픔 이미지 업로드
-    public String uploadItemImage(MultipartFile file) {
-        validateImageFile(file);
-
-        String fileName = generateItemImageKey(file);
-
-        try {
-            //AWS S3 파일을 업로드 요청 객체
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(fileName)
-                    .contentType(file.getContentType())
-                    .contentLength(file.getSize())
-                    .build();
-
-            s3Client.putObject(
-                    putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize())
-            );
-            String imageUrl = generateImageUrl(fileName);
-            log.info("상품 이미지 업로드 성공: {}", imageUrl);
-            return imageUrl;
-        } catch (IOException e) {
-            log.error("상품 이미지 업로드 실패", e);
-            throw new RuntimeException("이미지 업로드에 실패했습니다.", e);
+    public List<String> uploadItemImage(List<MultipartFile> images) {
+        if(images == null || images.isEmpty()){
+            return Collections.emptyList();
         }
-    }
-
-    public void deleteImage(String imageUrl) {
-        try {
-            //key(items/uuid1234.jpg) 뽑아내기
-            String key = extractKeyFromUrl(imageUrl);
-
-            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(key)
-                    .build();
-
-            s3Client.deleteObject(deleteObjectRequest);
-            log.info("이미지 삭제 성공 : {}", imageUrl);
-        }catch (Exception e){
-            log.error("이미지 삭제 실패", e);
-            throw new RuntimeException("이미지 삭제에 실패했습니다", e);
+        if (images.size() > 5){
+            throw new IllegalArgumentException("이미지는 최대 5장까지 업로드 가능합니다.");
         }
-
+        return images.stream()
+                .map(this::validateAndUpload)
+                .collect(Collectors.toList());
     }
-
-
 
 
     //파일 검증
-    private void validateImageFile(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("파일이 비었습니다.");
+    private String validateAndUpload(MultipartFile image){
+        if(!ALLOWED_TYPES.contains(image.getContentType())){
+            throw new IllegalArgumentException("지원하지 않는 이미지 형식입니다: " + image.getContentType());
+        }
+        if(image.getSize() > MAX_FILE_SIZE){
+            throw new IllegalArgumentException("이미지 크기는 10MB 이하여야 합니다.");
+        }
+        return upload(image);
+    }
+
+    private String upload(MultipartFile image){
+        String fileName = "items/" + UUID.randomUUID() + "_" + image.getOriginalFilename();
+
+        try {
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(bucket)
+                    .key(fileName)
+                    .contentType(image.getContentType())
+                    .build();
+            s3Client.putObject(request, RequestBody.fromInputStream(image.getInputStream(), image.getSize()));
+        }catch (IOException e){
+            throw new RuntimeException("S3 업로드 중 오류가 발생했습니다.", e);
         }
 
-        long maxSize = 10 * 1024 * 1024; // 10MB
-        if (file.getSize() > maxSize) {
-            throw new IllegalArgumentException("파일 크기는 10MB를 초과할 수 없습니다.");
-        }
-
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new IllegalArgumentException("이미지 파일만 업로드 가능합니다.");
-        }
-
-
+        return "https://" + bucket + ".s3." + region + "amazonaws.com/" + fileName;
     }
 
-    //S3 object key 생성 - items/uuid.jpg
-    private String generateItemImageKey(MultipartFile file) {
-        String extension = extractExtension(file.getOriginalFilename());
-        return ITEM_IMAGE_FOLDER + "/" + UUID.randomUUID() + extension;
+    public void deleteImage(String imageUrl){
+        String key = imageUrl.substring(imageUrl.indexOf("items/"));
+        s3Client.deleteObject(DeleteObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .build());
     }
 
-    private String extractExtension(String filename) {
-        if (filename == null || !filename.contains(".")) {
-            throw new IllegalArgumentException("파일 확장자가 존재하지 않습니다.");
-        }
-        return filename.substring(filename.lastIndexOf("."));
-    }
-
-    private String extractKeyFromUrl(String imageUrl) {
-        int index = imageUrl.indexOf(bucket + "/");
-        return imageUrl.substring(index + bucket.length() + 1);
-    }
-
-    private String generateImageUrl(String fileName) {
-        return String.format(
-                "https://%s.s3.%s.amazonaws.com/%s",
-                bucket, region, fileName
-        );
-    }
 }

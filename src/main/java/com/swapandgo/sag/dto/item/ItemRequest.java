@@ -1,6 +1,7 @@
 package com.swapandgo.sag.dto.item;
 
 import com.swapandgo.sag.domain.item.Category;
+import com.swapandgo.sag.domain.item.ItemType;
 import com.swapandgo.sag.domain.item.TradeType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -30,10 +31,11 @@ public class ItemRequest {
     private BigDecimal deposit;
 
     @NotNull
-    private TradeType tradeType;
+    private TradeType dealType;
+
+    @NotNull
+    private ItemType itemType;
 
     @NotBlank
-    private String location;
-
-    private List<String > images;
+    private String region;
 }
