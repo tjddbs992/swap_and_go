@@ -35,7 +35,7 @@ public class ItemService {
                 request.getContent(),
                 request.getPrice(),
                 null,
-                ItemType.RESALE,
+                request.getItemType(),
                 request.getDealType(),
                 request.getCategory(),
                 request.getRegion(),
