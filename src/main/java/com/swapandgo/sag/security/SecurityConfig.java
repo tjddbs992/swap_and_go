@@ -88,7 +88,7 @@ public class SecurityConfig {
                                            AuthenticationProvider authenticationProvider,
                                            JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
-                .cors(org.springframework.security.config.Customizer.withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
