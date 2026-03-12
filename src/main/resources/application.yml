@@ -41,6 +41,8 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
+    org.springframework.security: debug
+    com.swapandgo.sag.security: debug
 
 jwt:
   secret: "your-super-secret-key-that-should-be-at-least-32-characters-long-for-hs256"

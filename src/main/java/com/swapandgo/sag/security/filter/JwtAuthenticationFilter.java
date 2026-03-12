@@ -25,6 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
+            log.debug("JWT 필터 진입: {} {}", request.getMethod(), request.getRequestURI());
             String jwt = getJwtFromRequest(request);
 
             if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
@@ -41,6 +42,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 //인증된 사용자라고 스프링이 인식하게 됨 -> 컨트롤러에서 @AuthenticationPrincipal UserDetails user 자동 주입 등 가능
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.debug("JWT 토큰 기반 인증 성공: {}", email);
+            } else if (!StringUtils.hasText(jwt)) {
+                log.debug("Authorization 헤더에 JWT 토큰이 없습니다.");
+            } else {
+                log.debug("JWT 토큰 검증 실패");
             }
         }catch (Exception e){
             log.error("JWT 인증 중 오류 발생: {}", e.getMessage());
@@ -52,9 +57,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String getJwtFromRequest(HttpServletRequest request) {
         //Authorization: Bearer eyJhbGciOiJIUz... 부분 헤더에서 가져오기
         String bearerToken = request.getHeader("Authorization");
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")){
-            //Bearer 과 공백 이후 실제 토큰 부분
-            return bearerToken.substring(7);
+        if (!StringUtils.hasText(bearerToken)) {
+            return null;
+        }
+
+        // "Bearer <token>" (대소문자 무시), 공백 여러 개 허용
+        String[] parts = bearerToken.trim().split("\\s+");
+        if (parts.length == 2 && parts[0].equalsIgnoreCase("Bearer")) {
+            return parts[1].trim();
         }
         return null;
 
