@@ -1,7 +1,7 @@
 package com.swapandgo.sag.domain.item;
 
 import com.swapandgo.sag.domain.Image;
-import com.swapandgo.sag.domain.request.Request;
+import com.swapandgo.sag.domain.tradeoffer.TradeOffer;
 import com.swapandgo.sag.domain.transaction.Transaction;
 import com.swapandgo.sag.domain.user.User;
 import jakarta.persistence.*;
@@ -173,7 +173,7 @@ public class Item {
 
 
     //요청 메서드 -> 요청자와 대여 시작, 끝 기간을 파라미터로 받는다(중고거래일 경우 값 x)
-    public Request addRequestForm(User requester, LocalDateTime startAt, LocalDateTime endAt){
+    public TradeOffer addTradeOffer(User requester, LocalDateTime startAt, LocalDateTime endAt){
         if(requester.equals(this.user)){
             throw new IllegalStateException("본인 글에는 요청을 보낼 수 없습니다.");
         }
@@ -184,17 +184,17 @@ public class Item {
         } else if (this.type == ItemType.RENTAL) {
             if(startAt == null || endAt == null){
                 throw new IllegalArgumentException("대여 요청에는 대여 기간이 필요합니다.");
-            }else {
-                throw new IllegalStateException("지원하지 않는 거래 타입입니다.");
             }
+        } else {
+            throw new IllegalStateException("지원하지 않는 거래 타입입니다.");
         }
 
-        Request request = Request.create(requester, this, startAt, endAt);
+        TradeOffer tradeOffer = TradeOffer.create(requester, this, startAt, endAt);
 
         // 양방향 연관관계 동기화
-        requester.getSentRequests().add(request);
+        requester.getSentTradeOffers().add(tradeOffer);
 
-        return request;
+        return tradeOffer;
     }
 
 
