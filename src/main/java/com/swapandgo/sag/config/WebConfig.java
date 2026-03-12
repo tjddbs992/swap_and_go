@@ -16,9 +16,10 @@ public class WebConfig {
                 registry.addMapping("/**")
                         .allowedOriginPatterns(
                                 "http://localhost:3000",
-                                "https://*.ngrok.app"
+                                "https://*.ngrok.app",
+                                "https://swap-go-git-develop-diwonis-projects.vercel.app"
                         )
-                        .allowedMethods("*")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
             }
