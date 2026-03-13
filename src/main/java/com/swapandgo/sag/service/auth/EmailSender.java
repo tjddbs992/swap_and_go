@@ -18,6 +18,7 @@ public class EmailSender {
     public void sendVerificationEmail(String to, String code){
         try {
             SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("jangeh303127@gmail.com");
             message.setTo(to);
             message.setSubject("[SwapAndGo] 이메일 인증 코드");
             message.setText(
