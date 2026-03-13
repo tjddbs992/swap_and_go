@@ -1,6 +1,6 @@
 package com.swapandgo.sag.domain.user;
 
-import com.swapandgo.sag.domain.request.Request;
+import com.swapandgo.sag.domain.tradeoffer.TradeOffer;
 import com.swapandgo.sag.domain.WishList;
 import com.swapandgo.sag.domain.item.Item;
 import com.swapandgo.sag.domain.transaction.Transaction;
@@ -35,7 +35,7 @@ public class User {
     private List<WishList> wishLists = new ArrayList<>();
 
     @OneToMany(mappedBy = "requester", cascade = CascadeType.ALL)
-    private List<Request> sentRequests = new ArrayList<>();
+    private List<TradeOffer> sentTradeOffers = new ArrayList<>();
 
     @OneToMany(mappedBy = "buyer")
     private List<Transaction> transactions = new ArrayList<>();
@@ -79,11 +79,11 @@ public class User {
     }
 
     //요청을 보낸 user의 클래스에서 확정 메서드를 호출하는 구조
-    public Transaction confirmSentTransaction(Request request){
+    public Transaction confirmSentTransaction(TradeOffer tradeOffer){
 
         //게시물이 중고거래 일때는 기간 null
-        Transaction transaction = Transaction.create(request.getRequester(), request.getItem(), request.getItem().getType(),
-                request.getStartAt(), request.getEndAt());
+        Transaction transaction = Transaction.create(tradeOffer.getRequester(), tradeOffer.getItem(), tradeOffer.getItem().getType(),
+                tradeOffer.getStartAt(), tradeOffer.getEndAt());
 
         transactions.add(transaction);
 //        request.getItem().getUser().transactions.add(transaction);
