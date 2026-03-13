@@ -21,6 +21,10 @@ spring:
           starttls:
             enable: true
 
+sendgrid:
+  api-key: ${SENDGRID_API_KEY:}
+  from-email: ${SENDGRID_FROM_EMAIL:}
+
   data:
     redis:
       url: ${SPRING_DATA_REDIS_URL:redis://localhost:6379}
