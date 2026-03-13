@@ -87,6 +87,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            AuthenticationProvider authenticationProvider,
                                            JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+        System.out.println("[SecurityConfig] loaded: permitAll=/api/auth/**, /api/resale/items/**, /api/rental/items/**");
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
