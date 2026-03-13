@@ -10,10 +10,10 @@ spring:
       - io.awspring.cloud.autoconfigure.s3.S3AutoConfiguration
 
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: jangeh303127@gmail.com
-    password: yxqjgabpgczzugxg
+    host: ${SPRING_MAIL_HOST:smtp.sendgrid.net}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:apikey}
+    password: ${SPRING_MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
