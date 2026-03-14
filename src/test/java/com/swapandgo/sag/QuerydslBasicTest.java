@@ -7,6 +7,7 @@ import com.swapandgo.sag.domain.user.User;
 import jakarta.persistence.EntityManager;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import static com.swapandgo.sag.domain.user.QUser.user;
 
 @SpringBootTest
+@Tag("integration")
 @Transactional
 public class QuerydslBasicTest {
     @Autowired

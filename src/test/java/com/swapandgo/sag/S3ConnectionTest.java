@@ -1,5 +1,6 @@
 package com.swapandgo.sag;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,6 +9,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 
 @SpringBootTest
+@Tag("integration")
 public class S3ConnectionTest {
     @Autowired
     private S3Client s3Client;
