@@ -52,4 +52,22 @@ public class TradeOfferTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("진행 중인 요청");
     }
+
+    @Test
+    void cancel_thenReject_throws() {
+        User requester = User.createUser("r", "r@test.com", "pw", null);
+        Item item = Item.create(
+                User.createUser("o", "o@test.com", "pw", null),
+                "t", "c", new BigDecimal("10.00"), null,
+                ItemType.RESALE, TradeType.SELL, Category.티켓, "Seoul", List.of()
+        );
+
+        TradeOffer offer = TradeOffer.create(requester, item, null, null);
+        offer.cancel();
+        assertThat(offer.getStatus()).isEqualTo(TradeOfferStatus.CANCELED);
+
+        assertThatThrownBy(offer::reject)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("진행 중인 요청");
+    }
 }
