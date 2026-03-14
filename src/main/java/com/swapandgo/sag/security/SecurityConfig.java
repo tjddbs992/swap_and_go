@@ -87,16 +87,19 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            AuthenticationProvider authenticationProvider,
                                            JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+        System.out.println("[SecurityConfig] loaded: permitAll=/api/auth/**, /api/resale/items/**, /api/rental/items/**");
         http
-                .cors(org.springframework.security.config.Customizer.withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/signup", "/api/auth/refresh",
-                                "/api/auth/email", "/api/auth/email-confirm",
-                                "/api/resale/items/**", "/api/rental/items/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/resale/items/**",
+                                "/api/rental/items/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
