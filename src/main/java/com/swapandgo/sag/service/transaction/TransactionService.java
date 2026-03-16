@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +60,16 @@ public class TransactionService {
 
         transaction.rejectEarlyReturn(LocalDateTime.now());
         return transaction;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Transaction> listBuyerTransactions(Long buyerId) {
+        return transactionRepository.findAllByBuyerIdOrderByIdDesc(buyerId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Transaction> listSellerTransactions(Long sellerId) {
+        return transactionRepository.findAllByItemUserIdOrderByIdDesc(sellerId);
     }
 
     private Transaction findTransaction(Long transactionId) {
