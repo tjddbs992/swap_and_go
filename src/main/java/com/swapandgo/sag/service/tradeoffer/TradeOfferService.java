@@ -68,7 +68,7 @@ public class TradeOfferService {
         return tradeOffer;
     }
 
-    public TradeOffer acceptOffer(Long ownerId, Long tradeOfferId) {
+    public TradeOfferAcceptResult acceptOffer(Long ownerId, Long tradeOfferId) {
         TradeOffer tradeOffer = tradeOfferRepository.findById(tradeOfferId)
                 .orElseThrow(() -> new EntityNotFoundException("TradeOffer not found: " + tradeOfferId));
 
@@ -96,7 +96,7 @@ public class TradeOfferService {
             }
         }
 
-        return tradeOffer;
+        return new TradeOfferAcceptResult(tradeOffer, transaction.getId());
     }
 
     public TradeOffer rejectOffer(Long ownerId, Long tradeOfferId) {
@@ -110,5 +110,15 @@ public class TradeOfferService {
 
         tradeOffer.reject();
         return tradeOffer;
+    }
+
+    @Transactional(readOnly = true)
+    public List<TradeOffer> listSentOffers(Long requesterId) {
+        return tradeOfferRepository.findAllByRequesterIdOrderByIdDesc(requesterId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TradeOffer> listReceivedOffers(Long ownerId) {
+        return tradeOfferRepository.findAllByItemUserIdOrderByIdDesc(ownerId);
     }
 }
