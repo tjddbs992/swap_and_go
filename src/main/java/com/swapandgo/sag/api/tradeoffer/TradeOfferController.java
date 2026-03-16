@@ -3,21 +3,16 @@ package com.swapandgo.sag.api.tradeoffer;
 import com.swapandgo.sag.dto.tradeoffer.TradeOfferCreateRequest;
 import com.swapandgo.sag.dto.tradeoffer.TradeOfferResponse;
 import com.swapandgo.sag.security.user.CustomUserDetails;
-import com.swapandgo.sag.service.tradeoffer.TradeOfferAcceptResult;
 import com.swapandgo.sag.service.tradeoffer.TradeOfferService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -51,8 +46,9 @@ public class TradeOfferController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long tradeOfferId) {
         Long userId = userDetails.getUserId();
-        TradeOfferAcceptResult result = tradeOfferService.acceptOffer(userId, tradeOfferId);
-        TradeOfferResponse response = new TradeOfferResponse(result.getTradeOffer(), result.getTransactionId());
+        TradeOfferResponse response = new TradeOfferResponse(
+                tradeOfferService.acceptOffer(userId, tradeOfferId)
+        );
         return ResponseEntity.ok(response);
     }
 
@@ -65,25 +61,5 @@ public class TradeOfferController {
                 tradeOfferService.rejectOffer(userId, tradeOfferId)
         );
         return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/api/tradeoffer/sent")
-    public ResponseEntity<List<TradeOfferResponse>> getSentTradeOffers(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long userId = userDetails.getUserId();
-        List<TradeOfferResponse> responses = tradeOfferService.listSentOffers(userId).stream()
-                .map(TradeOfferResponse::new)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(responses);
-    }
-
-    @GetMapping("/api/tradeoffer/received")
-    public ResponseEntity<List<TradeOfferResponse>> getReceivedTradeOffers(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long userId = userDetails.getUserId();
-        List<TradeOfferResponse> responses = tradeOfferService.listReceivedOffers(userId).stream()
-                .map(TradeOfferResponse::new)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(responses);
     }
 }
