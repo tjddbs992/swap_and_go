@@ -10,4 +10,8 @@ public interface TradeOfferRepository extends JpaRepository<TradeOffer, Long> {
     boolean existsByItemIdAndRequesterIdAndStatus(Long itemId, Long requesterId, TradeOfferStatus status);
 
     List<TradeOffer> findAllByItemIdAndStatus(Long itemId, TradeOfferStatus status);
+
+    List<TradeOffer> findAllByRequesterIdOrderByIdDesc(Long requesterId);
+
+    List<TradeOffer> findAllByItemUserIdOrderByIdDesc(Long ownerId);
 }
