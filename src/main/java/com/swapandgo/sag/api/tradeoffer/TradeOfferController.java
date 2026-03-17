@@ -1,7 +1,9 @@
 package com.swapandgo.sag.api.tradeoffer;
 
+import com.swapandgo.sag.domain.tradeoffer.TradeOfferStatus;
 import com.swapandgo.sag.dto.tradeoffer.TradeOfferCreateRequest;
 import com.swapandgo.sag.dto.tradeoffer.TradeOfferResponse;
+import com.swapandgo.sag.dto.tradeoffer.TradeOfferStatusUpdateRequest;
 import com.swapandgo.sag.security.user.CustomUserDetails;
 import com.swapandgo.sag.service.tradeoffer.TradeOfferAcceptResult;
 import com.swapandgo.sag.service.tradeoffer.TradeOfferService;
@@ -10,10 +12,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -24,7 +27,7 @@ import java.util.stream.Collectors;
 public class TradeOfferController {
     private final TradeOfferService tradeOfferService;
 
-    @PostMapping("/api/tradeoffer")
+    @PostMapping("/api/tradeoffers")
     public ResponseEntity<TradeOfferResponse> createTradeOffer(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid TradeOfferCreateRequest request) {
@@ -35,55 +38,50 @@ public class TradeOfferController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/api/tradeoffer/{tradeOfferId}")
-    public ResponseEntity<TradeOfferResponse> cancelTradeOffer(
+    @PatchMapping("/api/tradeoffers/{tradeOfferId}")
+    public ResponseEntity<TradeOfferResponse> updateTradeOfferStatus(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long tradeOfferId) {
+            @PathVariable Long tradeOfferId,
+            @RequestBody @Valid TradeOfferStatusUpdateRequest request) {
         Long userId = userDetails.getUserId();
-        TradeOfferResponse response = new TradeOfferResponse(
-                tradeOfferService.cancelOffer(userId, tradeOfferId)
-        );
-        return ResponseEntity.ok(response);
+        TradeOfferStatus status = request.getStatus();
+        if (status == TradeOfferStatus.CANCELED) {
+            TradeOfferResponse response = new TradeOfferResponse(
+                    tradeOfferService.cancelOffer(userId, tradeOfferId)
+            );
+            return ResponseEntity.ok(response);
+        }
+        if (status == TradeOfferStatus.ACCEPTED) {
+            TradeOfferAcceptResult result = tradeOfferService.acceptOffer(userId, tradeOfferId);
+            TradeOfferResponse response = new TradeOfferResponse(result.getTradeOffer(), result.getTransactionId());
+            return ResponseEntity.ok(response);
+        }
+        if (status == TradeOfferStatus.REJECTED) {
+            TradeOfferResponse response = new TradeOfferResponse(
+                    tradeOfferService.rejectOffer(userId, tradeOfferId)
+            );
+            return ResponseEntity.ok(response);
+        }
+        throw new IllegalArgumentException("지원하지 않는 상태 변경입니다.");
     }
 
-    @PostMapping("/api/tradeoffer/{tradeOfferId}/accept")
-    public ResponseEntity<TradeOfferResponse> acceptTradeOffer(
+    @GetMapping("/api/tradeoffers")
+    public ResponseEntity<List<TradeOfferResponse>> listTradeOffers(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long tradeOfferId) {
+            @RequestParam("role") String role) {
         Long userId = userDetails.getUserId();
-        TradeOfferAcceptResult result = tradeOfferService.acceptOffer(userId, tradeOfferId);
-        TradeOfferResponse response = new TradeOfferResponse(result.getTradeOffer(), result.getTransactionId());
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/api/tradeoffer/{tradeOfferId}/reject")
-    public ResponseEntity<TradeOfferResponse> rejectTradeOffer(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long tradeOfferId) {
-        Long userId = userDetails.getUserId();
-        TradeOfferResponse response = new TradeOfferResponse(
-                tradeOfferService.rejectOffer(userId, tradeOfferId)
-        );
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/api/tradeoffer/sent")
-    public ResponseEntity<List<TradeOfferResponse>> getSentTradeOffers(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long userId = userDetails.getUserId();
-        List<TradeOfferResponse> responses = tradeOfferService.listSentOffers(userId).stream()
-                .map(TradeOfferResponse::new)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(responses);
-    }
-
-    @GetMapping("/api/tradeoffer/received")
-    public ResponseEntity<List<TradeOfferResponse>> getReceivedTradeOffers(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        Long userId = userDetails.getUserId();
-        List<TradeOfferResponse> responses = tradeOfferService.listReceivedOffers(userId).stream()
-                .map(TradeOfferResponse::new)
-                .collect(Collectors.toList());
+        List<TradeOfferResponse> responses;
+        if ("sender".equalsIgnoreCase(role)) {
+            responses = tradeOfferService.listSentOffers(userId).stream()
+                    .map(TradeOfferResponse::new)
+                    .collect(Collectors.toList());
+        } else if ("receiver".equalsIgnoreCase(role)) {
+            responses = tradeOfferService.listReceivedOffers(userId).stream()
+                    .map(TradeOfferResponse::new)
+                    .collect(Collectors.toList());
+        } else {
+            throw new IllegalArgumentException("role은 sender 또는 receiver 여야 합니다.");
+        }
         return ResponseEntity.ok(responses);
     }
 }

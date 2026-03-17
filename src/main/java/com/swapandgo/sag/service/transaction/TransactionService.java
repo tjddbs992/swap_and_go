@@ -1,6 +1,7 @@
 package com.swapandgo.sag.service.transaction;
 
 import com.swapandgo.sag.domain.item.Item;
+import com.swapandgo.sag.domain.transaction.EarlyReturnStatus;
 import com.swapandgo.sag.domain.transaction.Transaction;
 import com.swapandgo.sag.dto.transaction.EarlyReturnRequest;
 import com.swapandgo.sag.repository.TransactionRepository;
@@ -60,6 +61,19 @@ public class TransactionService {
 
         transaction.rejectEarlyReturn(LocalDateTime.now());
         return transaction;
+    }
+
+    public Transaction updateEarlyReturnStatus(Long ownerId, Long transactionId, EarlyReturnStatus status) {
+        if (status == EarlyReturnStatus.ACCEPTED) {
+            return acceptEarlyReturn(ownerId, transactionId);
+        }
+        if (status == EarlyReturnStatus.REJECTED) {
+            return rejectEarlyReturn(ownerId, transactionId);
+        }
+        if (status == EarlyReturnStatus.CANCELED) {
+            return cancelEarlyReturn(ownerId, transactionId);
+        }
+        throw new IllegalArgumentException("지원하지 않는 상태 변경입니다.");
     }
 
     @Transactional(readOnly = true)
