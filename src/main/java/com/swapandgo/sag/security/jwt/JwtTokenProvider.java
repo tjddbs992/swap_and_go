@@ -2,6 +2,7 @@ package com.swapandgo.sag.security.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,26 +31,32 @@ public class JwtTokenProvider {
 
     //Access Token 생성
     public String generateAccessToken(String email){
-        return createToken(email, accessTokenExpirationTime);
+        return createToken(email, null, accessTokenExpirationTime);
+    }
+
+    public String generateAccessToken(String email, String role){
+        return createToken(email, role, accessTokenExpirationTime);
     }
 
     //Refresh Token 생성
     public String generateRefreshToken(String email){
-        return createToken(email, refreshTokenExpirationTime);
+        return createToken(email, null, refreshTokenExpirationTime);
     }
 
 
     //JWT 토큰 생성 메서드
-    private String createToken(String email, long expirationTime) {
+    private String createToken(String email, String role, long expirationTime) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationTime);
 
-        return Jwts.builder()
+        JwtBuilder builder = Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
+                .setExpiration(expiryDate);
+        if (role != null && !role.isBlank()) {
+            builder.claim("role", role);
+        }
+        return builder.signWith(key, SignatureAlgorithm.HS256).compact();
     }
 
 
@@ -89,5 +96,3 @@ public class JwtTokenProvider {
 
 
 }
-
-

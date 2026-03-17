@@ -18,6 +18,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Slf4j
 @Service
 @Transactional
@@ -31,6 +35,9 @@ public class AuthService {
 
     @Value("${jwt.access-token-expiration}")
     private long accessTokenExpirationTime;
+
+    @Value("${admin.emails:}")
+    private String adminEmails;
 
     //회원가입
     public void signup(SignupRequest request){
@@ -78,7 +85,8 @@ public class AuthService {
             );
 
             //JWT 토큰 생성
-            String accessToken = jwtTokenProvider.generateAccessToken(request.getEmail());
+            String role = resolveRole(request.getEmail());
+            String accessToken = jwtTokenProvider.generateAccessToken(request.getEmail(), role);
             String refreshToken = jwtTokenProvider.generateRefreshToken(request.getEmail());
 
             return AuthTokens.of(accessToken, refreshToken, accessTokenExpirationTime);
@@ -98,9 +106,22 @@ public class AuthService {
         //DB저장은 일단 생략
 
 
-        String newAccessToken = jwtTokenProvider.generateAccessToken(email);
+        String role = resolveRole(email);
+        String newAccessToken = jwtTokenProvider.generateAccessToken(email, role);
 
         return LoginResponse.of(newAccessToken, accessTokenExpirationTime);
 
+    }
+
+    private String resolveRole(String email) {
+        Set<String> admins = Arrays.stream(adminEmails.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.toSet());
+
+        if (admins.contains(email)) {
+            return "ADMIN";
+        }
+        return "USER";
     }
 }
