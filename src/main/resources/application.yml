@@ -55,6 +55,9 @@ jwt:
   access-token-expiration: 3600000
   refresh-token-expiration: 604800000
 
+admin:
+  emails: ${ADMIN_EMAILS:}
+
 cloud:
   aws:
     credentials:
