@@ -13,7 +13,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,9 +34,7 @@ public class ChatController {
     public ResponseEntity<List<ChatRoomResponse>> listMyRooms(
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         Long userId = userDetails.getUserId();
-        List<ChatRoomResponse> responses = chatService.listMyRooms(userId).stream()
-                .map(ChatRoomResponse::new)
-                .collect(Collectors.toList());
+        List<ChatRoomResponse> responses = chatService.listMyRoomResponses(userId);
         return ResponseEntity.ok(responses);
     }
 
@@ -48,7 +45,7 @@ public class ChatController {
         Long userId = userDetails.getUserId();
         List<ChatMessageResponse> responses = chatService.listMessages(roomId, userId).stream()
                 .map(ChatMessageResponse::new)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(responses);
     }
 
