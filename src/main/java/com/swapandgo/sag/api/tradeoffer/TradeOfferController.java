@@ -66,7 +66,9 @@ public class TradeOfferController {
         }
         if (status == TradeOfferStatus.ACCEPTED) {
             TradeOfferAcceptResult result = tradeOfferService.acceptOffer(userId, tradeOfferId);
-            TradeOfferSimpleResponse response = new TradeOfferSimpleResponse(result.getTradeOffer());
+            TradeOfferSimpleResponse response = new TradeOfferSimpleResponse(
+                    result.getTradeOffer(), result.getTransactionId()
+            );
             return ResponseEntity.ok(response);
         }
         if (status == TradeOfferStatus.REJECTED) {
